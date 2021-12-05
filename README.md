@@ -10,8 +10,8 @@ yet supported by OpenZFS. Also it's suggested that zfs packages should be
 upgraded *before* kernel upgrades (see [this comment on GitHub](
 https://github.com/openzfs/zfs/issues/9891#issuecomment-761979624)).
 
-This little script is designed to eliminate all the laborious manual work and
-do the upgrades **just in one shot**.
+This little script is aimed to eliminate all the laborious manual work and do
+the upgrades **just in one shot**.
 
 ## Steps involved in this script
 
