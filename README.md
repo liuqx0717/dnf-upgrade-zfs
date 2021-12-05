@@ -59,6 +59,25 @@ sudo ./dnf-upgrade-zfs.py
 sudo ./dnf-upgrade-zfs.py -- -y
 ```
 
+Sample output:
+
+```
+$ sudo ./dnf-upgrade-zfs.py -- -y
+[INFO] __main__: Initializing dnf...
+[INFO] dnf: Last metadata expiration check: 0:58:59 ago on Sat 04 Dec 2021 09:50:08 PM PST.
+[INFO] __main__: Successfully initialized dnf
+[INFO] __main__: Target version of 'zfs': None
+[INFO] __main__: Installed versions of 'zfs': ['2.1.1']
+[INFO] __main__: zfsMaxKernelVer=5.14
+[INFO] __main__: Target version of 'kernel': 5.15.6
+[INFO] __main__: Excluding kernel upgrades, because 5.15.6 > 5.14
+[INFO] __main__: Upgrading all the packages...
+Last metadata expiration check: 0:59:00 ago on Sat 04 Dec 2021 09:50:08 PM PST.
+Dependencies resolved.
+Nothing to do.
+Complete!
+```
+
 ## Compatibility
 
 Tested on Fedora 34. But it should work on any distro with `dnf` (e.g. CentOS).
