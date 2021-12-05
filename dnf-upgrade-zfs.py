@@ -31,7 +31,7 @@ def getZfsMaxKernelVer(zfs_ver):
     zfsMetaStr = response.text
     logger.debug("zfsMetaStr=%s", repr(zfsMetaStr))
     findRes = re.findall(r"^Linux-Maximum:\s*(\d+\.\d+)$",
-                          zfsMetaStr, re.MULTILINE)
+                         zfsMetaStr, re.MULTILINE)
     if len(findRes) != 1:
         raise ValueError("len(findRes) should be 1. findRes=%s, zfsMetaStr=%s" % \
                          (repr(findRes), repr(zfsMetaStr)))
@@ -168,7 +168,7 @@ def main():
     dnfOpts = []
     if krnTargetVer and cmpMajorMinor(krnTargetVer, zfsMaxKernelVer) < 0:
         logger.info("Excluding kernel upgrades, because %s > %s",
-                    str(krnTargetVer), zfsMaxKernelVer)
+                    str(krnTargetVer), str(zfsMaxKernelVer))
         dnfOpts.append("--exclude=kernel*")
     logger.info("Upgrading all the packages...")
     rc = runDnfCommand(dnfOpts + ["upgrade"])
