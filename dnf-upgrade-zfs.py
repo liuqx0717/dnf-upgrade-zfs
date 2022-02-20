@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import requests
 import packaging.version as version
+import urllib.request
 import re
 import logging
 import dnf
@@ -24,11 +24,9 @@ def getZfsMaxKernelVer(zfs_ver):
     url = "https://raw.githubusercontent.com/openzfs/zfs/zfs-%s/META" % \
           (str(zfs_ver), )
     logger.debug("Getting zfsMetaStr from '%s'...", url)
-    response = requests.get(url, timeout=10)
-    if response.status_code != 200:
-        raise ConnectionError("response.status_code should be 200. response.status_code=%d" % \
-                              (response.status_code, ))
-    zfsMetaStr = response.text
+    with urllib.request.urlopen(url, timeout=10) as response:
+        resBytes = response.read()
+    zfsMetaStr = resBytes.decode("utf-8")
     logger.debug("zfsMetaStr=%s", repr(zfsMetaStr))
     findRes = re.findall(r"^Linux-Maximum:\s*(\d+\.\d+)$",
                          zfsMetaStr, re.MULTILINE)
