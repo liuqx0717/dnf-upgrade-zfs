@@ -10,10 +10,10 @@ yet supported by OpenZFS. Also it's suggested that zfs packages should be
 upgraded *before* kernel upgrades (see [this comment on GitHub](
 https://github.com/openzfs/zfs/issues/9891#issuecomment-761979624)).
 
-This little script is aimed to eliminate all the laborious manual work and do
-the upgrades **just in one shot**.
+This tiny script aims to eliminate all the laborious manual work and do
+the upgrades **in one shot**.
 
-## Steps involved in this script
+## Steps taken in this script
 
 1. If zfs *can* be upgraded, run `dnf upgrade zfs*`.
 2. If the target kernel version is not supported by the newest zfs package
