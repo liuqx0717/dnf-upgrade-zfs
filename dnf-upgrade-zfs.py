@@ -45,6 +45,7 @@ def dnfQueryToMap(query):
     ret = {}
     for p in query:
         ret.setdefault(p.name, []).append(p)
+    logger.debug("Query result: %s", repr(ret))
     return ret
 
 
@@ -67,6 +68,7 @@ def getInstalledPkgVer(pkgName):
 def getTargetPkgVer(pkgName):
     """
     Get the target version of a package in a dnf upgrade operation.
+    When multiple target versions are available, return the biggest one.
     @pkgName: string
     @return: version.Version. (Or None if no upgrade is needed.)
     """
@@ -78,8 +80,8 @@ def getTargetPkgVer(pkgName):
         return ret
     assert len(m) == 1
     pkgs = m[pkgName]
-    assert len(pkgs) == 1
-    ret = version.Version(pkgs[0].version)
+    versions = [version.Version(p.version) for p in pkgs]
+    ret = max(versions)
     logger.info("Target version of '%s': %s", pkgName, str(ret))
     return ret
 
