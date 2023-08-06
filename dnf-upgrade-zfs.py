@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import packaging.version as version
-import urllib.request
+import requests
 import re
 import logging
 import dnf
@@ -13,6 +13,7 @@ LOGFMT = "[%(levelname)s] %(name)s: %(message)s"
 DNFOPTS = []
 logger = logging.getLogger(__name__)
 dnfBase = dnf.Base()
+proxies = {}
 
 
 def getZfsMaxKernelVer(zfs_ver):
@@ -24,9 +25,8 @@ def getZfsMaxKernelVer(zfs_ver):
     url = "https://raw.githubusercontent.com/openzfs/zfs/zfs-%s/META" % \
           (str(zfs_ver), )
     logger.debug("Getting zfsMetaStr from '%s'...", url)
-    with urllib.request.urlopen(url, timeout=10) as response:
-        resBytes = response.read()
-    zfsMetaStr = resBytes.decode("utf-8")
+    resp = requests.get(url, timeout=10, proxies=proxies)
+    zfsMetaStr = resp.text
     logger.debug("zfsMetaStr=%s", repr(zfsMetaStr))
     findRes = re.findall(r"^Linux-Maximum:\s*(\d+\.\d+)$",
                          zfsMetaStr, re.MULTILINE)
@@ -122,27 +122,43 @@ def runDnfCommand(args):
     return runCommand(["/bin/dnf"] + DNFOPTS + args)
 
 
-def initLogger():
-    logger.setLevel(LOGLEVEL)
+def initLogger(logLevel, logFmt):
+    logger.setLevel(logLevel)
     loggerHandler = logging.StreamHandler()
-    loggerHandler.setFormatter(logging.Formatter(LOGFMT))
+    loggerHandler.setFormatter(logging.Formatter(logFmt))
     logger.addHandler(loggerHandler)
 
 
-def initDnf():
+def initDnf(logLevel, logFmt):
     logger.info("Initializing dnf...")
     dnfLogger = logging.getLogger("dnf")
-    dnfLogger.setLevel(LOGLEVEL)
+    dnfLogger.setLevel(logLevel)
     dnfLoggerHandler = logging.StreamHandler()
-    dnfLoggerHandler.setFormatter(logging.Formatter(LOGFMT))
+    dnfLoggerHandler.setFormatter(logging.Formatter(logFmt))
     dnfLogger.addHandler(dnfLoggerHandler)
     dnfBase.conf.read(dnfBase.conf.config_file_path)
+    logger.debug("dnf proxy: %s", dnfBase.conf.proxy)
     dnfBase.read_all_repos()
     for repo in dnfBase.repos.iter_enabled():
         logger.debug("Enabled repo: %s, %s, %s", str(repo.id),
                      str(repo.baseurl), str(repo.metalink))
     dnfBase.fill_sack(load_system_repo=True, load_available_repos=True)
     logger.info("Successfully initialized dnf")
+
+
+def initProxies(proxyUrl=""):
+    """
+    @proxyUrl: e.g. "socks5h://127.0.0.1:8080". See the curl man page
+        for details.
+    """
+    global proxies
+    logger.debug("Script proxy: %s", proxyUrl)
+    if not proxyUrl:
+        return
+    proxies = {
+        "http": proxyUrl,
+        "https": proxyUrl,
+    }
 
 
 def main():
@@ -179,6 +195,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage='%(prog)s [OPTIONS] [-- DNFOPTS...]')
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="verbose mode")
+    parser.add_argument("-x", "--proxy", type=str, default="",
+                        help="proxy url, e.g. 'socks5h://127.0.0.1:8080'. "
+                             "See the curl man page for details. Note that "
+                             "only requests initiated by this script are "
+                             "affected by this option. For requests initiated "
+                             "inside dnf, use the proxy= setting in dnf.conf.")
     parser.add_argument("DNFOPTS", nargs="*",
                         help="additional options for dnf, e.g. %(prog)s -- -y")
     args = parser.parse_args()
@@ -187,7 +209,8 @@ if __name__ == "__main__":
         LOGLEVEL = logging.DEBUG
     DNFOPTS.extend(args.DNFOPTS)
 
-    initLogger()
-    initDnf()
+    initLogger(LOGLEVEL, LOGFMT)
+    initDnf(LOGLEVEL, LOGFMT)
+    initProxies(args.proxy)
     rc = main()
     sys.exit(rc)

@@ -41,11 +41,18 @@ See these hooks:
 usage: dnf-upgrade-zfs.py [OPTIONS] [-- DNFOPTS...]
 
 positional arguments:
-  DNFOPTS        additional options for dnf, e.g. dnf-upgrade-zfs.py -- -y
+  DNFOPTS               additional options for dnf, e.g. dnf-upgrade-zfs.py --
+                        -y
 
-optional arguments:
-  -h, --help     show this help message and exit
-  -v, --verbose  verbose mode
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose mode
+  -x PROXY, --proxy PROXY
+                        proxy url, e.g. 'socks5h://127.0.0.1:8080'. See the
+                        curl man page for details. Note that only requests
+                        initiated by this script are affected by this option.
+                        For requests initiated inside dnf, use the proxy=
+                        setting in dnf.conf.
 
 ```
 
